@@ -54,6 +54,22 @@
     date_changed: DATETIME
     changed_by: INT(11)
   gateway: omrs
+- name: '`openmrs`.`concept_map_type`'
+  columns:
+    concept_map_type_id: INT(11)
+    name: VARCHAR(255)
+    description: VARCHAR(255)
+    creator: INT(11)
+    date_created: DATETIME
+    changed_by: INT(11)
+    date_changed: DATETIME
+    is_hidden: TINYINT(1)
+    retired: TINYINT(1)
+    retired_by: INT(11)
+    date_retired: DATETIME
+    retire_reason: VARCHAR(255)
+    uuid: CHAR(38)
+  gateway: omrs
 - name: '`openmrs`.`concept_name`'
   columns:
     concept_name_id: INT(11)
@@ -71,6 +87,53 @@
     uuid: CHAR(38)
     date_changed: DATETIME
     changed_by: INT(11)
+  gateway: omrs
+- name: '`openmrs`.`concept_reference_map`'
+  columns:
+    concept_map_id: INT(11)
+    concept_reference_term_id: INT(11)
+    concept_map_type_id: INT(11)
+    creator: INT(11)
+    date_created: DATETIME
+    concept_id: INT(11)
+    changed_by: INT(11)
+    date_changed: DATETIME
+    uuid: CHAR(38)
+  gateway: omrs
+- name: '`openmrs`.`concept_reference_source`'
+  columns:
+    concept_source_id: INT(11)
+    name: VARCHAR(50)
+    description: TEXT
+    hl7_code: VARCHAR(50)
+    creator: INT(11)
+    date_created: DATETIME
+    retired: TINYINT(1)
+    retired_by: INT(11)
+    date_retired: DATETIME
+    retire_reason: VARCHAR(255)
+    uuid: CHAR(38)
+    unique_id: VARCHAR(250)
+    date_changed: DATETIME
+    changed_by: INT(11)
+  gateway: omrs
+- name: '`openmrs`.`concept_reference_term`'
+  columns:
+    concept_reference_term_id: INT(11)
+    concept_source_id: INT(11)
+    name: VARCHAR(255)
+    code: VARCHAR(255)
+    version: VARCHAR(255)
+    description: VARCHAR(255)
+    creator: INT(11)
+    date_created: DATETIME
+    date_changed: DATETIME
+    changed_by: INT(11)
+    retired: TINYINT(1)
+    retired_by: INT(11)
+    date_retired: DATETIME
+    retire_reason: VARCHAR(255)
+    uuid: CHAR(38)
   gateway: omrs
 - name: '`openmrs`.`conditions`'
   columns:

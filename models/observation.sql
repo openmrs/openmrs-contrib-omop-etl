@@ -27,7 +27,7 @@ SELECT
     NULL AS obs_event_field_concept_id
 FROM openmrs.obs AS o
     INNER join openmrs.encounter e on o.encounter_id = e.encounter_id
-    INNER join openmrs.encounter_type on e.encounter_type = encounter_type.encounter_type_id AND encounter_type_id NOT IN (5,11) -- 5 = vitals, 11 = lab results
+    INNER join openmrs.encounter_type on e.encounter_type = encounter_type.encounter_type_id AND encounter_type_id NOT IN (5,8,11) -- 5 = vitals, 8 = notes, 11 = lab results
 INNER JOIN raw.OMRS_TO_OMOP_CONCEPT omrs_to_omop_concept
            ON o.concept_id = omrs_to_omop_concept.omrs_concept_id  AND relationship_id='SAME-AS' AND vocabulary_id='CIEL'
 WHERE o.voided = 0;

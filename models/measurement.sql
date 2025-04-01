@@ -29,7 +29,7 @@ SELECT
     NULL AS meas_event_field_concept_id
 FROM openmrs.obs AS o
     INNER JOIN openmrs.encounter e ON o.encounter_id = e.encounter_id
-    INNER JOIN openmrs.encounter_type et ON e.encounter_type = et.encounter_type_id AND et.encounter_type_id IN (5,11)
+    INNER JOIN openmrs.encounter_type et ON e.encounter_type = et.encounter_type_id AND et.encounter_type_id IN (5,11) -- 5 = vitals, 11 = lab results
     LEFT JOIN openmrs.concept_numeric cn ON o.concept_id = cn.concept_id
     INNER JOIN raw.OMRS_TO_OMOP_CONCEPT omrs_to_omop_concept
     ON o.concept_id = omrs_to_omop_concept.omrs_concept_id

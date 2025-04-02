@@ -88,6 +88,19 @@
     date_changed: DATETIME
     changed_by: INT(11)
   gateway: omrs
+- name: '`openmrs`.`concept_numeric`'
+  columns:
+    concept_id: INT(11)
+    hi_absolute: DOUBLE
+    hi_critical: DOUBLE
+    hi_normal: DOUBLE
+    low_absolute: DOUBLE
+    low_critical: DOUBLE
+    low_normal: DOUBLE
+    units: VARCHAR(50)
+    allow_decimal: TINYINT(1)
+    display_precision: INT(11)
+  gateway: omrs
 - name: '`openmrs`.`concept_reference_map`'
   columns:
     concept_map_id: INT(11)
@@ -159,6 +172,42 @@
     date_changed: DATETIME
     encounter_id: INT(11)
     form_namespace_and_path: VARCHAR(255)
+  gateway: omrs
+- name: '`openmrs`.`encounter`'
+  columns:
+    encounter_id: INT(11)
+    encounter_type: INT(11)
+    patient_id: INT(11)
+    location_id: INT(11)
+    form_id: INT(11)
+    encounter_datetime: DATETIME
+    creator: INT(11)
+    date_created: DATETIME
+    voided: TINYINT(1)
+    voided_by: INT(11)
+    date_voided: DATETIME
+    void_reason: VARCHAR(255)
+    changed_by: INT(11)
+    date_changed: DATETIME
+    visit_id: INT(11)
+    uuid: CHAR(38)
+  gateway: omrs
+- name: '`openmrs`.`encounter_type`'
+  columns:
+    encounter_type_id: INT(11)
+    name: VARCHAR(50)
+    description: TEXT
+    creator: INT(11)
+    date_created: DATETIME
+    retired: TINYINT(1)
+    retired_by: INT(11)
+    date_retired: DATETIME
+    retire_reason: VARCHAR(255)
+    uuid: CHAR(38)
+    edit_privilege: VARCHAR(255)
+    view_privilege: VARCHAR(255)
+    changed_by: INT(11)
+    date_changed: DATETIME
   gateway: omrs
 - name: '`openmrs`.`location`'
   columns:

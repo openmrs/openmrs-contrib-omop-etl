@@ -7,7 +7,7 @@ services:
       - "3306:3306"
 
   postgres:
-    image: postgres:13
+    image: postgres:15
     container_name: postgres
     restart: always
     environment:
@@ -17,7 +17,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./omop-ddl/processed:/docker-entrypoint-initdb.d
 
 volumes:
   mariadb_data:

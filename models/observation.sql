@@ -18,11 +18,11 @@ SELECT
     NULL AS provider_id,
     o.encounter_id AS visit_occurrence_id,
     NULL AS visit_detail_id,
-    '' AS observation_source_value,
+    CAST('' AS VARCHAR(50)) AS observation_source_value,
     omrs_to_omop_concept.omrs_concept_id AS observation_source_concept_id,
-    '' AS unit_source_value,
-    '' AS qualifier_source_value,
-    '' AS value_source_value,
+    CAST('' AS VARCHAR(50)) AS unit_source_value,
+    CAST('' AS VARCHAR(50)) AS qualifier_source_value,
+    CAST('' AS VARCHAR(50)) AS value_source_value,
     NULL AS observation_event_id,
     NULL AS obs_event_field_concept_id
 FROM openmrs.obs AS o

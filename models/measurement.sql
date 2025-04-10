@@ -20,7 +20,7 @@ SELECT
     NULL AS provider_id,
     o.encounter_id AS visit_occurrence_id,
     NULL AS visit_detail_id,
-    '' AS measurement_source_value,
+    CAST('' AS VARCHAR(50)) AS measurement_source_value,
     omrs_to_omop_concept.omrs_concept_id AS measurement_source_concept_id,
     cn.units AS unit_source_value,
     NULL AS unit_source_concept_id,

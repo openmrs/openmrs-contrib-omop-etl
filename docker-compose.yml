@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  # dbname: openmrs username: openmrs pw: openmrs rootpw: openmrs
   omrsdb:
     image: openmrs/openmrs-reference-application-3-db:nightly-with-data
     ports:

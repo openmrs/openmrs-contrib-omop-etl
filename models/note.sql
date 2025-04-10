@@ -11,14 +11,14 @@ SELECT
     o.obs_datetime AS note_datetime,
     44814645 AS note_type_concept_id,       -- "Note"
     44814645 AS note_class_concept_id,      -- "Note"
-    '' AS note_title,
+    CAST('' AS VARCHAR(50)) AS note_title,
     o.value_text AS note_text,
     4180186 AS encoding_concept_id,         -- UTF-8
     0 AS language_concept_id,
     NULL AS provider_id,
     o.encounter_id AS visit_occurrence_id,
     NULL AS visit_detail_id,
-    '' AS note_source_value,
+    CAST('' AS VARCHAR(50)) AS note_source_value,
     NULL AS note_event_id,
     NULL AS note_event_field_concept_id
 FROM openmrs.obs o

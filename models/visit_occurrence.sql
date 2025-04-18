@@ -9,8 +9,8 @@ SELECT
     0 AS visit_concept_id,
     DATE(v.date_started) AS visit_start_date,
     v.date_started AS visit_start_datetime,
-    DATE(v.date_stopped) AS visit_end_date,
-    v.date_stopped AS visit_end_datetime,
+    COALESCE(DATE(v.date_stopped), CURRENT_DATE) AS visit_end_date, -- revisit this
+    COALESCE(v.date_stopped, CURRENT_TIMESTAMP) AS visit_end_datetime, -- revisit this
     v.visit_type_id AS visit_type_concept_id, -- revisit this
     0 AS provider_id,
     v.location_id AS care_site_id,

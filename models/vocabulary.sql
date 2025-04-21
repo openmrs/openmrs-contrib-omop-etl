@@ -1,7 +1,7 @@
 MODEL (
-  name  omop_db.CONCEPT,
+  name omop_db.VOCABULARY,
   kind SEED (
-    path '$root/seed/CONCEPT.csv',
+    path '$root/seed/VOCABULARY.csv',
     csv_settings (
       delimiter = "\t"
     )

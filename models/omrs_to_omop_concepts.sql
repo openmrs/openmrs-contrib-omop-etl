@@ -11,5 +11,5 @@ SELECT
     oc.vocabulary_id,
     oc.domain_id,
     oc.concept_class_id
-FROM raw.CONCEPT_RELATIONSHIP cr INNER JOIN raw.OMOP_CONCEPT oc
+FROM raw.CONCEPT_RELATIONSHIP cr INNER JOIN  omop_db.CONCEPT oc
                                             ON cr.concept_code = oc.concept_code

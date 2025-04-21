@@ -1,5 +1,5 @@
 MODEL (
-  name  omop_db.CONCEPT,
+  name raw.CONCEPT,
   kind SEED (
     path '$root/seed/CONCEPT.csv',
     csv_settings (

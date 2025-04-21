@@ -2,3 +2,4 @@
 env
 .cache
 logs
+*.tmp.csv

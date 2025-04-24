@@ -8,13 +8,14 @@ MYSQL_PORT="3306"
 SOURCE_DB="omop_db"
 TARGET_MYSQL_DB="public"
 
-PG_USER="omop"
-PG_PASSWORD="omop"
-PG_HOST="localhost"
-PG_PORT="5432"
-TARGET_PG_DB="omop"
+#PG_USER="omop"
+#PG_PASSWORD="omop"
+#PG_HOST="localhost"
+#PG_PORT="5432"
+#TARGET_PG_DB="omop"
 
-CONCEPTS_CSV_FILE="seed/CONCEPT.csv"
+# Path to fix table data types sql script
+FIX_DATA_TYPES_SQL_FILE="fix_table_data_types.sql"
 
 
 # === Create target MySQL DB if it doesn't exist ===
@@ -65,3 +66,8 @@ mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h $MYSQL_HOST -P $MYSQL_PORT --protocol=T
         MODIFY COLUMN observation_source_concept_id INT,
     MODIFY COLUMN observation_event_id BIGINT;
       "
+
+
+
+# Run the SQL file
+mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -h "$MYSQL_HOST" -P "$MYSQL_PORT" --protocol=TCP public < "$FIX_DATA_TYPES_SQL_FILE"

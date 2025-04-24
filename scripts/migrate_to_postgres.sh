@@ -35,7 +35,7 @@ EOSQL
 # # === Step 3: Migrate the entire MySQL DB to PostgreSQL ===
 echo "🚚 Running pgloader to migrate entire database '$TARGET_MYSQL_DB' to PostgreSQL '$TARGET_PG_DB'..."
 
-cat <<EOF > temp_pgloader.load
+cat <<EOF > tmp/temp_pgloader.load
 LOAD DATABASE
      FROM mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST:$MYSQL_PORT/$TARGET_MYSQL_DB
      INTO postgresql://$PG_USER:$PG_PASSWORD@$PG_HOST:$PG_PORT/$PG_DB
@@ -47,7 +47,7 @@ LOAD DATABASE
            type datetime to timestamp;
 EOF
 
-pgloader temp_pgloader.load
+pgloader tmp/temp_pgloader.load
 
 echo "✅ Migration complete: All materialized views are now in PostgreSQL database '$TARGET_PG_DB'."
 

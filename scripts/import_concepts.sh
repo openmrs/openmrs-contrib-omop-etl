@@ -34,9 +34,9 @@ psql -U "$PG_USER" -h "$PG_HOST" -p "$PG_PORT" -d "$TARGET_PG_DB" <<EOF
 EOF
 
 
-sed 's/"/""/g' $CONCEPTS_CSV_FILE > escaped_concepts.tmp.csv
+sed 's/"/""/g' $CONCEPTS_CSV_FILE > tmp/escaped_concepts.tmp.csv
 
 psql -U "$PG_USER" -h "$PG_HOST" -p "$PG_PORT" -d "$TARGET_PG_DB" <<EOF
-\copy concept FROM 'escaped_concepts.tmp.csv' WITH (FORMAT csv, DELIMITER E'\t', HEADER true);
+\copy concept FROM 'tmp/escaped_concepts.tmp.csv' WITH (FORMAT csv, DELIMITER E'\t', HEADER true);
 EOF
 

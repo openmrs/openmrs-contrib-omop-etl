@@ -1,23 +1,36 @@
 MODEL(
         name omop_db.PROVIDER,
-        kind FULL
+        kind FULL,
+        columns(
+                provider_id INT NOT NULL,
+                provider_name VARCHAR(255),
+                npi VARCHAR(20),
+                dea VARCHAR(20),
+                specialty_concept_id INT,
+                care_site_id INT,
+                gender_concept_id INT,
+                provider_source_value VARCHAR(50),
+                specialty_source_value VARCHAR(50),
+                specialty_source_concept_id INT,
+                gender_source_value VARCHAR(50),
+                gender_source_concept_id INT
+        )
 );
 
 SELECT u.user_id                                  AS provider_id,
        CONCAT(pn.given_name, ' ', pn.family_name) AS provider_name,
-       CAST(NULL AS VARCHAR(20))                  AS npi,
-       CAST(NULL AS VARCHAR(20))                  AS dea,
-       CAST(NULL AS INTEGER)                      AS specialty_concept_id,
-       CAST(NULL AS INTEGER)                      AS care_site_id,
-       CAST(YEAR(p.birthdate) AS INTEGER)         AS year_of_birth,
+       NULL                                       AS npi,
+       NULL                                       AS dea,
+       NULL                                       AS specialty_concept_id,
+       NULL                                       AS care_site_id,
        CASE
            WHEN p.gender = 'M' THEN 8507 -- OMOP concept_id for Male
            WHEN p.gender = 'F' THEN 8532 -- OMOP concept_id for Female
            ELSE 0
            END                                    AS gender_concept_id,
-       CAST(u.uuid AS VARCHAR(50))                AS provider_source_value,
-       CAST(NULL AS VARCHAR(50))                  AS specialty_source_value,
-       CAST(NULL AS INTEGER)                      AS specialty_source_concept_id,
+       u.uuid                                     AS provider_source_value,
+       NULL                                       AS specialty_source_value,
+       NULL                                       AS specialty_source_concept_id,
        p.gender                                   AS gender_source_value,
        CASE
            WHEN p.gender = 'M' THEN 8507

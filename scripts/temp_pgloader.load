@@ -1,0 +1,9 @@
+LOAD DATABASE
+     FROM mysql://root:openmrs@localhost:3306/public
+     INTO postgresql://omop:omop@localhost:5432/
+
+      WITH include no drop,
+           data only
+
+      CAST type int to integer,
+           type datetime to timestamp;

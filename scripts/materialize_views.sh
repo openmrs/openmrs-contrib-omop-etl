@@ -66,8 +66,3 @@ mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h $MYSQL_HOST -P $MYSQL_PORT --protocol=T
         MODIFY COLUMN observation_source_concept_id INT,
     MODIFY COLUMN observation_event_id BIGINT;
       "
-
-
-
-# Run the SQL file
-mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -h "$MYSQL_HOST" -P "$MYSQL_PORT" --protocol=TCP public < "$FIX_DATA_TYPES_SQL_FILE"

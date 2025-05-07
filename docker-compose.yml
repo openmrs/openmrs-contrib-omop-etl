@@ -6,6 +6,36 @@ services:
     image: openmrs/openmrs-reference-application-3-db:nightly-with-data
     ports:
       - "3306:3306"
+  sqlmesh-db:
+    image: mariadb:10.11.7
+    restart: "unless-stopped"
+    command: "mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
+    environment:
+      MYSQL_DATABASE: openmrs
+      MYSQL_USER: openmrs
+      MYSQL_PASSWORD: openmrs
+      MYSQL_ROOT_PASSWORD: openmrs
+    volumes:
+      - db-data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+
+  sqlmesh:
+    build: .
+    container_name: sqlmesh
+    environment:
+      SRC_HOST: omrsdb
+      SRC_PORT: 3306
+      SRC_USER: openmrs
+      SRC_PASS: openmrs
+      SRC_DB: openmrs
+    depends_on:
+      - sqlmesh-db
+      - omrsdb
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    entrypoint: ["bash", "./entrypoint.sh"]
 
   postgres:
     image: postgres:15
@@ -21,5 +51,5 @@ services:
       - ./omop-ddl/processed/ddl:/docker-entrypoint-initdb.d
 
 volumes:
-  mariadb_data:
-  postgres_data:
+  db-data: ~
+  postgres_data: ~

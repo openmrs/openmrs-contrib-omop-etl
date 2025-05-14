@@ -29,6 +29,12 @@ services:
       SRC_USER: openmrs
       SRC_PASS: openmrs
       SRC_DB: openmrs
+      SQLMESH_DB_ROOT_PASSWORD: openmrs
+      TARGET_HOST: postgres
+      TARGET_PORT: 5432
+      TARGET_USER: omop
+      TARGET_PASS: omop
+      TARGET_DB: omop
     depends_on:
       - sqlmesh-db
       - omrsdb
@@ -50,6 +56,16 @@ services:
     volumes:
       - ./omop-ddl/processed/ddl:/docker-entrypoint-initdb.d
 
+  pgloader:
+    image: dimitri/pgloader
+    volumes:
+      - ./scripts/tmp:/data
+    depends_on:
+      - sqlmesh-db
+      - postgres
+#    entrypoint: [ "pgloader", "/data/temp_pgloader.load" ]
+    networks:
+      - default
 volumes:
   db-data: ~
   postgres_data: ~

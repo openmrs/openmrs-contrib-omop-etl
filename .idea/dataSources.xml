@@ -39,7 +39,7 @@
       </jdbc-additional-properties>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="@localhost [2]" uuid="db2e74e8-6c45-4708-8859-0f4e1ec2b0d8">
+    <data-source source="LOCAL" name="sqlmesh_db" uuid="db2e74e8-6c45-4708-8859-0f4e1ec2b0d8">
       <driver-ref>mariadb</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.mariadb.jdbc.Driver</jdbc-driver>

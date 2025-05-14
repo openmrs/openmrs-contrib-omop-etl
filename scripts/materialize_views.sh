@@ -3,19 +3,10 @@
 # === CONFIG ===
 MYSQL_USER="root"
 MYSQL_PASSWORD="openmrs"
-MYSQL_HOST="localhost"
+MYSQL_HOST="sqlmesh-db"
 MYSQL_PORT="3306"
 SOURCE_DB="omop_db"
 TARGET_MYSQL_DB="public"
-
-#PG_USER="omop"
-#PG_PASSWORD="omop"
-#PG_HOST="localhost"
-#PG_PORT="5432"
-#TARGET_PG_DB="omop"
-
-# Path to fix table data types sql script
-FIX_DATA_TYPES_SQL_FILE="fix_table_data_types.sql"
 
 
 # === Create target MySQL DB if it doesn't exist ===
@@ -60,9 +51,9 @@ done
 
 # === fix the observation table
 
-mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h $MYSQL_HOST -P $MYSQL_PORT --protocol=TCP -e "
-      ALTER TABLE \`$TARGET_MYSQL_DB\`.OBSERVATION
-        MODIFY COLUMN observation_concept_id INT,
-        MODIFY COLUMN observation_source_concept_id INT,
-    MODIFY COLUMN observation_event_id BIGINT;
-      "
+#mysql -u$MYSQL_USER -p$MYSQL_PASSWORD -h $MYSQL_HOST -P $MYSQL_PORT --protocol=TCP -e "
+#      ALTER TABLE \`$TARGET_MYSQL_DB\`.OBSERVATION
+#        MODIFY COLUMN observation_concept_id INT,
+#        MODIFY COLUMN observation_source_concept_id INT,
+#    MODIFY COLUMN observation_event_id BIGINT;
+#      "

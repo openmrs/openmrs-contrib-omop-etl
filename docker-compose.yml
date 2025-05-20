@@ -40,12 +40,14 @@ services:
     depends_on:
       - sqlmesh-db
       - omrsdb
+      - omop-db
     # Uncomment the following line during development to mount local files and see changes without rebuilding the image.
     # Note: This will override files copied into /core during build.
     # - so be sure your local files are complete.
     volumes:
        - ./core:/core
-    entrypoint: ["bash", "./entrypoint.sh"]
+    profiles:
+      - manual
 
   omop-db:
     image: postgres:15
@@ -60,9 +62,10 @@ services:
 #    volumes:
 #      - ./omop-ddl/processed/ddl:/docker-entrypoint-initdb.d
 
+
   achilles:
     image: ohdsi/broadsea-achilles:master
-    container_name: ohdsi-achilles
+    container_name: achilles
     platform: linux/amd64
     depends_on:
       - omop-db
@@ -74,6 +77,8 @@ services:
       ACHILLES_VOCAB_SCHEMA: "public"
       ACHILLES_RESULTS_SCHEMA: "public"
       ACHILLES_CDM_VERSION: "5.4"
+    profiles:
+      - manual
 
 volumes:
   db-data: ~

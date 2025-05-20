@@ -1,36 +1,49 @@
 
 
-## Setting up the project
+## 🏗️ Setting Up the Project
 
-1. Clone the repository
-2. Create a virtual environment:
-    ```sh
-    python3 -m venv venv
+Follow these steps to get the project up and running:
+
+1. **Clone the repository**
+   ```
+   git clone git@github.com:jayasanka-sack/openmrs-to-omop.git
+   cd openmrs-to-omop
+   ```
+
+2. **Build the Docker image**  
+    ```
+    docker compose build core
     ```
 
-3. Activate the virtual environment:
-    - On macOS and Linux:
-        ```sh
-        source venv/bin/activate
-        ```
-    - On Windows:
-        ```sh
-        .\venv\Scripts\activate
-        ```
+3. **Start the services**
+   ```
+   docker compose up
+   ```
 
-4. Install dependencies:
-    ```sh
-    pip install -r requirements.txt
-    ```
-5. Run the SQL mesh UI:
-    ```sh
-    sqlmesh ui
-    ```
-   navigate to `http://127.0.0.1:8000/` in your browser to view the UI.
-6. Or run the SQL mesh CLI:
-    ```sh
-    sqlmesh plan
-    ```
+4. **Run the core service to convert the data**  
+   This will process and populate the OMOP database in the `omop-db` PostgreSQL container under the `public` schema:
+   ```
+   docker compose run core
+   ```
+
+5. **Run Achilles to generate data summaries** (Check What Achilles does below.)
+   ```
+   docker compose run achilis
+   ``` 
+
+
+## 🧪 What does Achilles do?
+Achilles analyzes the OMOP CDM data and generates summary statistics, data quality metrics, and precomputed reports. These results are essential for visualizations in tools like Atlas.
+
+When you run:
+
+```
+docker compose run achilis
+```
+- ✅ It connects to your omop-db
+- ✅ Scans and summarizes data in the public schema
+- ✅ Produces results in the Achilles_results and Achilles_analysis tables
+- ✅ Prepares your OMOP CDM for use with the web-based Atlas UI
 
 
 

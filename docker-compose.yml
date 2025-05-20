@@ -35,6 +35,8 @@ services:
       TARGET_USER: omop
       TARGET_PASS: omop
       TARGET_DB: omop
+      ACHILLES_VOCAB_SCHEMA: vocab
+      ACHILLES_RESULTS_SCHEMA: results
     depends_on:
       - sqlmesh-db
       - omrsdb
@@ -55,8 +57,23 @@ services:
       POSTGRES_PASSWORD: omop
     ports:
       - "5432:5432"
-    volumes:
-      - ./omop-ddl/processed/ddl:/docker-entrypoint-initdb.d
+#    volumes:
+#      - ./omop-ddl/processed/ddl:/docker-entrypoint-initdb.d
+
+  achilles:
+    image: ohdsi/broadsea-achilles:master
+    container_name: ohdsi-achilles
+    platform: linux/amd64
+    depends_on:
+      - omop-db
+    environment:
+      ACHILLES_DB_URI: "postgresql://omop-db:5432/omop"
+      ACHILLES_DB_USERNAME: "omop"
+      ACHILLES_DB_PASSWORD: "omop"
+      ACHILLES_CDM_SCHEMA: "public"
+      ACHILLES_VOCAB_SCHEMA: "public"
+      ACHILLES_RESULTS_SCHEMA: "public"
+      ACHILLES_CDM_VERSION: "5.4"
 
 volumes:
   db-data: ~

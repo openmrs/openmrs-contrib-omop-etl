@@ -34,13 +34,3 @@ psql -h "$TARGET_HOST" -p "$TARGET_PORT" -U "$TARGET_USER" -d "$TARGET_DB" -f "o
 . scripts/import_concepts.sh
 . scripts/execute_constraints.sh
 
-# Create achilles schemas
-echo "🟡 Creating achilles schema $ACHILLES_VOCAB_SCHEMA and $ACHILLES_RESULTS_SCHEMA"
-
-#psql -h "$TARGET_HOST" -p "$TARGET_PORT" -U "$TARGET_USER" -d postgres -tc "SELECT 1 FROM WHERE datname = '$ACHILLES_VOCAB_SCHEMA'" | grep -q 1 || \
-#psql -h "$TARGET_HOST" -p "$TARGET_PORT" -U "$TARGET_USER" -d postgres -c "CREATE DATABASE $ACHILLES_VOCAB_SCHEMA"
-#
-#psql -h "$TARGET_HOST" -p "$TARGET_PORT" -U "$TARGET_USER" -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = '$ACHILLES_RESULTS_SCHEMA'" | grep -q 1 || \
-#psql -h "$TARGET_HOST" -p "$TARGET_PORT" -U "$TARGET_USER" -d postgres -c "CREATE DATABASE $ACHILLES_RESULTS_SCHEMA"
-
-echo "✅ Creating achilles schema $ACHILLES_VOCAB_SCHEMA and $ACHILLES_RESULTS_SCHEMA completed"

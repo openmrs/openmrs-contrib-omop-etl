@@ -28,7 +28,7 @@ Follow these steps to get the project up and running:
 
 5. **Run Achilles to generate data summaries** (Check What Achilles does below.)
    ```
-   docker compose run achilis
+   docker compose run achilles
    ``` 
 
 
@@ -38,7 +38,7 @@ Achilles analyzes the OMOP CDM data and generates summary statistics, data quali
 When you run:
 
 ```
-docker compose run achilis
+docker compose run achilles
 ```
 - ✅ It connects to your omop-db
 - ✅ Scans and summarizes data in the public schema

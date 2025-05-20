@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e  # Exit on any error
 
 echo "Dumping from $SRC_HOST:$SRC_PORT/$SRC_DB as $SRC_USER"
 

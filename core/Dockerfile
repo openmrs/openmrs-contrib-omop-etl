@@ -14,12 +14,19 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 
-#COPY requirements.txt ./requirements.txt
+# Install sqlmesh (force system install)
+RUN pip install --break-system-packages sqlmesh
+RUN pip install --break-system-packages pymysql
 
-# TOOD: Use a non-root user
-RUN #pip3 install -r requirements.txt
+# set workdir
+WORKDIR /core
 
-# Copy scripts and config
-COPY entrypoint.sh ./entrypoint.sh
+COPY seed seed
+COPY omop-ddl omop-ddl
+COPY models models
+COPY scripts scripts
+COPY config.yaml .
+COPY entrypoint.sh .
+
 
 RUN chmod +x ./entrypoint.sh

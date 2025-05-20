@@ -2,4 +2,4 @@
 env
 .cache
 logs
-scripts/tmp/
+core/scripts/tmp/

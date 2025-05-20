@@ -21,7 +21,7 @@ services:
       - "3307:3306"
 
   core:
-    build: .
+    build: core
     container_name: core
     environment:
       SRC_HOST: omrsdb
@@ -38,9 +38,11 @@ services:
     depends_on:
       - sqlmesh-db
       - omrsdb
+    # Uncomment the following line during development to mount local files and see changes without rebuilding the image.
+    # Note: This will override files copied into /core during build.
+    # - so be sure your local files are complete.
     volumes:
-      - .:/workspace
-    working_dir: /workspace
+       - ./core:/core
     entrypoint: ["bash", "./entrypoint.sh"]
 
   omop-db:

@@ -7,5 +7,4 @@ until mysqladmin ping -h sqlmesh-db -uopenmrs -popenmrs --silent; do
 done
 
 #bash scripts/script.sh
-
 tail -f /dev/null

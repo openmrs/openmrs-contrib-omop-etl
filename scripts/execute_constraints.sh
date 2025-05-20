@@ -1,7 +1,5 @@
 #!/bin/bash
 
-
-
 export PGPASSWORD=$TARGET_PASS
 
 echo "🔗 Connecting to PostgreSQL and executing constraint scripts..."

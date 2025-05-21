@@ -1,5 +1,6 @@
-.idea/
+.idea
 env
 .cache
 logs
 core/scripts/tmp/
+.DS_Store

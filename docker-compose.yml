@@ -80,6 +80,23 @@ services:
     profiles:
       - manual
 
+  airflow:
+    image: apache/airflow:latest
+    environment:
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
+      _AIRFLOW_WWW_USER_FIRSTNAME: Admin
+      _AIRFLOW_WWW_USER_LASTNAME: User
+      _AIRFLOW_WWW_USER_EMAIL: admin@example.com
+    volumes:
+      - ./airflow-dags:/opt/airflow/dags
+      - ./airflow-logs:/opt/airflow/logs
+    ports:
+      - "8080:8080"
+    command: bash -c "airflow db init && airflow users create --role Admin --username \$$_AIRFLOW_WWW_USER_USERNAME --password \$$_AIRFLOW_WWW_USER_PASSWORD --firstname \$$_AIRFLOW_WWW_USER_FIRSTNAME --lastname \$$_AIRFLOW_WWW_USER_LASTNAME --email \$$_AIRFLOW_WWW_USER_EMAIL && airflow webserver"
 volumes:
   db-data: ~
   postgres_data: ~

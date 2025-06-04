@@ -33,7 +33,7 @@ def create_core_docker_task(task_id, command, image='dbt-core', extra_env=None):
         task_id=task_id,
         image=image,
         api_version='auto',
-        auto_remove='never',
+        auto_remove='success',
         docker_url='unix://var/run/docker.sock',
         network_mode='dbt_default',
         tmp_dir='/opt/airflow/tmp',
@@ -43,7 +43,7 @@ def create_core_docker_task(task_id, command, image='dbt-core', extra_env=None):
     )
 
 with DAG(
-        dag_id='run_two_scripts_hourly',
+        dag_id='OpenMRS_to_OMOP_ETL',
         default_args=default_args,
         start_date=datetime(2023, 1, 1),
         schedule='@hourly',  # runs every hour
@@ -51,6 +51,8 @@ with DAG(
 ) as dag:
     clone_openmrs_db = create_core_docker_task("clone_openmrs_db","clone-omrs-db")
     run_sqlmesh = create_core_docker_task("run_sqlmesh", "run-sqlmesh")
+    materialize_views = create_core_docker_task("materialize_views", "materialize-views")
+    migrate_to_postgres = create_core_docker_task("migrate_to_postgres", "migrate-to-postgres")
 
     run_achilles = DockerOperator(
         task_id='run_achilles',
@@ -72,4 +74,4 @@ with DAG(
         }
     )
 
-clone_openmrs_db >> run_sqlmesh >> run_achilles
+clone_openmrs_db >> run_sqlmesh >> materialize_views >> migrate_to_postgres >> run_achilles

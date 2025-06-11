@@ -9,7 +9,7 @@ default_args = {
 }
 
 
-def create_core_docker_task(task_id, command, image='dbt-core', extra_env=None):
+def create_core_docker_task(task_id, command, image='omop-etl-core', extra_env=None):
     base_env = {
         'SRC_HOST': 'omrsdb',
         'SRC_PORT': '3306',
@@ -60,8 +60,8 @@ with DAG(
 
 
     run_achilles = DockerOperator(
-        task_id='run_achilles',
-        image='ohdsi/broadsea-achilles:master',
+        task_id='achilles',
+        image='omop-etl-achilles',
         api_version='auto',
         auto_remove='success',
         docker_url='unix://var/run/docker.sock',

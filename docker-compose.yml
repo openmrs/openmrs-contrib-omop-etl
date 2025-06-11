@@ -22,6 +22,7 @@ services:
 
   core:
     build: core
+    image: omop-etl-core
     container_name: core
     environment:
       SRC_HOST: omrsdb
@@ -62,7 +63,8 @@ services:
 #    volumes:
 #      - ./omop-ddl/processed/ddl:/docker-entrypoint-initdb.d
   achilles:
-    image: ohdsi/broadsea-achilles:master
+    build: achilles
+    image: omop-etl-achilles
     container_name: achilles
     platform: linux/amd64
     depends_on:

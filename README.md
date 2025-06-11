@@ -10,9 +10,10 @@ Follow these steps to get the project up and running:
    cd openmrs-to-omop
    ```
 
-2. **Build the Docker image**  
+2. **Build the Required Images**
+    Run the following command to build the `omop-etl-core` and `omop-etl-achilles` images:
     ```
-    docker compose build core
+    docker compose --profile manual build
     ```
 
 3. **Start the services**

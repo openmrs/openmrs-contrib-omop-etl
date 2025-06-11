@@ -49,10 +49,15 @@ with DAG(
         schedule='@hourly',  # runs every hour
         catchup=False
 ) as dag:
-    clone_openmrs_db = create_core_docker_task("clone_openmrs_db","clone-omrs-db")
-    run_sqlmesh = create_core_docker_task("run_sqlmesh", "run-sqlmesh")
-    materialize_views = create_core_docker_task("materialize_views", "materialize-views")
-    migrate_to_postgres = create_core_docker_task("migrate_to_postgres", "migrate-to-postgres")
+
+    clone_openmrs_db = create_core_docker_task("clone_openmrs_db","clone-openmrs-db")
+    apply_sqlmesh_plan = create_core_docker_task("apply_sqlmesh_plan", "apply-sqlmesh-plan")
+    materialize_mysql_views = create_core_docker_task("materialize_mysql_views", "materialize-mysql-views")
+    migrate_to_postresql = create_core_docker_task("migrate_to_postgresql", "migrate-to-postgresql")
+    import_omop_concepts = create_core_docker_task("import_omop_concepts", "import-omop-concepts")
+    apply_omop_constraints = create_core_docker_task("apply_omop_constraints", "apply-omop-constraints")
+
+
 
     run_achilles = DockerOperator(
         task_id='run_achilles',
@@ -74,4 +79,4 @@ with DAG(
         }
     )
 
-clone_openmrs_db >> run_sqlmesh >> materialize_views >> migrate_to_postgres >> run_achilles
+clone_openmrs_db >> apply_sqlmesh_plan >> materialize_mysql_views >> migrate_to_postresql >> import_omop_concepts >> apply_omop_constraints >> run_achilles

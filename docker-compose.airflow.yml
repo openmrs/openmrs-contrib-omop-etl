@@ -60,7 +60,7 @@ x-airflow-common:
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__CORE__EXECUTION_API_SERVER_URL: 'http://airflow-apiserver:8080/execution/'
     # yamllint disable rule:line-length
     # Use simple http server on scheduler for health checks
@@ -332,87 +332,6 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
-  # dbname: openmrs username: openmrs pw: openmrs rootpw: openmrs
-  omrsdb:
-    image: openmrs/openmrs-reference-application-3-db:nightly-with-data
-    ports:
-      - "3306:3306"
-  sqlmesh-db:
-    image: mariadb:10.11.7
-    restart: "unless-stopped"
-    command: "mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
-    environment:
-      MYSQL_DATABASE: openmrs
-      MYSQL_USER: openmrs
-      MYSQL_PASSWORD: openmrs
-      MYSQL_ROOT_PASSWORD: openmrs
-    volumes:
-      - db-data:/var/lib/mysql
-    ports:
-      - "3307:3306"
-
-  core:
-    build: core
-    container_name: core
-    environment:
-      SRC_HOST: omrsdb
-      SRC_PORT: 3306
-      SRC_USER: openmrs
-      SRC_PASS: openmrs
-      SRC_DB: openmrs
-      SQLMESH_DB_ROOT_PASSWORD: openmrs
-      TARGET_HOST: omop-db
-      TARGET_PORT: 5432
-      TARGET_USER: omop
-      TARGET_PASS: omop
-      TARGET_DB: omop
-      ACHILLES_VOCAB_SCHEMA: vocab
-      ACHILLES_RESULTS_SCHEMA: results
-    depends_on:
-      - sqlmesh-db
-      - omrsdb
-      - omop-db
-    # Uncomment the following line during development to mount local files and see changes without rebuilding the image.
-    # Note: This will override files copied into /core during build.
-    # - so be sure your local files are complete.
-    volumes:
-      - ./core:/core
-    profiles:
-      - manual
-
-  omop-db:
-    image: postgres:15
-    container_name: omop-db
-    restart: always
-    environment:
-      POSTGRES_DB: omop
-      POSTGRES_USER: omop
-      POSTGRES_PASSWORD: omop
-    ports:
-      - "5432:5432"
-  #    volumes:
-  #      - ./omop-ddl/processed/ddl:/docker-entrypoint-initdb.d
-
-
-  achilles:
-    image: ohdsi/broadsea-achilles:master
-    container_name: achilles
-    platform: linux/amd64
-    depends_on:
-      - omop-db
-    environment:
-      ACHILLES_DB_URI: "postgresql://omop-db:5432/omop"
-      ACHILLES_DB_USERNAME: "omop"
-      ACHILLES_DB_PASSWORD: "omop"
-      ACHILLES_CDM_SCHEMA: "public"
-      ACHILLES_VOCAB_SCHEMA: "public"
-      ACHILLES_RESULTS_SCHEMA: "public"
-      ACHILLES_CDM_VERSION: "5.4"
-    profiles:
-      - manual
-
 
 volumes:
   postgres-db-volume:
-  db-data: ~
-  postgres_data: ~

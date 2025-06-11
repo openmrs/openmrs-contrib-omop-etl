@@ -72,6 +72,23 @@ docker compose run achilles
 - ✅ Produces results in the Achilles_results and Achilles_analysis tables
 - ✅ Prepares your OMOP CDM for use with the web-based Atlas UI
 
+## 🌀 Optional: Run with Airflow
+You can run this project with Apache Airflow to visually orchestrate and schedule your data pipeline.
+
+### To start with Airflow:
+```bash
+docker compose -f docker-compose.yml -f docker-compose.airflow.yml up
+```
+`
+This will launch the Airflow UI at:
+👉 http://localhost:8080
+
+Login credentials:\
+Username: airflow\
+Password: airflow
+
+You can use the UI to manually trigger DAGs that run your pipeline steps.
+![](docs/img/airflow.jpeg)
 
 
 ## Setting Up Git LFS for This Repository

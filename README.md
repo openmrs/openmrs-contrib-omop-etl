@@ -79,7 +79,7 @@ You can run this project with Apache Airflow to visually orchestrate and schedul
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.airflow.yml up
 ```
-`
+
 This will launch the Airflow UI at:
 👉 http://localhost:8080
 

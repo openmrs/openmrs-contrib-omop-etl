@@ -4,3 +4,4 @@ env
 logs
 core/tmp/
 .DS_Store
+__pycache__

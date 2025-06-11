@@ -7,7 +7,7 @@ MODEL(
                 year_of_birth INT NOT NULL,
                 month_of_birth INT,
                 day_of_birth INT,
-                birth_datetime TIMESTAMP,
+                birth_datetime DATETIME,
                 race_concept_id INT NOT NULL,
                 ethnicity_concept_id INT NOT NULL,
                 location_id INT,

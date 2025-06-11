@@ -15,7 +15,7 @@ RUN apt-get update && \
 
 
 # Install sqlmesh (force system install)
-RUN pip install --break-system-packages sqlmesh
+RUN pip install --break-system-packages sqlmesh==0.190.0
 RUN pip install --break-system-packages pymysql
 
 # set workdir
@@ -24,11 +24,10 @@ WORKDIR /core
 COPY seed seed
 COPY omop-ddl omop-ddl
 COPY models models
-COPY scripts scripts
 COPY config.yaml .
 COPY entrypoint.sh .
 
 
-RUN chmod +x ./entrypoint.sh
+RUN chmod +x /core/entrypoint.sh
 
 ENTRYPOINT ["/core/entrypoint.sh"]

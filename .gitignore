@@ -2,5 +2,5 @@
 env
 .cache
 logs
-core/scripts/tmp/
+core/tmp/
 .DS_Store

@@ -44,8 +44,8 @@ services:
     # Uncomment the following line during development to mount local files and see changes without rebuilding the image.
     # Note: This will override files copied into /core during build.
     # - so be sure your local files are complete.
-    volumes:
-       - ./core:/core
+#    volumes:
+#       - ./core:/core
     profiles:
       - manual
 
@@ -61,8 +61,6 @@ services:
       - "5432:5432"
 #    volumes:
 #      - ./omop-ddl/processed/ddl:/docker-entrypoint-initdb.d
-
-
   achilles:
     image: ohdsi/broadsea-achilles:master
     container_name: achilles
@@ -80,23 +78,6 @@ services:
     profiles:
       - manual
 
-  airflow:
-    image: apache/airflow:latest
-    environment:
-      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
-      AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
-      _AIRFLOW_WWW_USER_USERNAME: admin
-      _AIRFLOW_WWW_USER_PASSWORD: admin
-      _AIRFLOW_WWW_USER_FIRSTNAME: Admin
-      _AIRFLOW_WWW_USER_LASTNAME: User
-      _AIRFLOW_WWW_USER_EMAIL: admin@example.com
-    volumes:
-      - ./airflow-dags:/opt/airflow/dags
-      - ./airflow-logs:/opt/airflow/logs
-    ports:
-      - "8080:8080"
-    command: bash -c "airflow db init && airflow users create --role Admin --username \$$_AIRFLOW_WWW_USER_USERNAME --password \$$_AIRFLOW_WWW_USER_PASSWORD --firstname \$$_AIRFLOW_WWW_USER_FIRSTNAME --lastname \$$_AIRFLOW_WWW_USER_LASTNAME --email \$$_AIRFLOW_WWW_USER_EMAIL && airflow webserver"
 volumes:
   db-data: ~
   postgres_data: ~

@@ -21,12 +21,39 @@ Follow these steps to get the project up and running:
    ```
 
 4. **Run the core service to convert the data**  
-   This will process and populate the OMOP database in the `omop-db` PostgreSQL container under the `public` schema:
-   ```
-   docker compose run core
-   ```
+    
+    Typical usage:
 
-5. **Run Achilles to generate data summaries** (Check What Achilles does below.)
+```bash
+docker compose run --rm core <command>
+```
+
+**Available Commands**
+
+| Command                   | Description                                                                                                                        |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `clone-openmrs-db`        | Clones the OpenMRS database from a configured source into the `openmrs` MySQL database inside the container.                       |
+| `apply-sqlmesh-plan`      | Runs the SQLMesh plan with `--no-prompts` and auto-applies changes.                                                                |
+| `materialize-mysql-views` | Extracts all views from the `omop_db` MySQL schema and materializes them as physical tables into the `public` schema.              |
+| `migrate-to-postgresql`   | Migrates the materialized MySQL database to PostgreSQL using `pgloader`, recreating the target PostgreSQL DB and loading OMOP DDL. |
+| `import-omop-concepts`    | Imports OMOP vocabulary/concept CSVs (`CONCEPT_CLASS`, `DOMAIN`, `VOCABULARY`, and `CONCEPT`) into the PostgreSQL database.        |
+| `apply-omop-constraints`  | Executes SQL constraint scripts from `omop-ddl/processed/constraints/` against the PostgreSQL database.                            |
+| `run-full-pipeline`       | Executes all steps: clone DB, apply SQLMesh, materialize views, migrate to PostgreSQL, import concepts, and apply constraints.     |
+
+**Example**
+
+To run the full pipeline:
+
+```bash
+docker compose run --rm core run-all
+```
+
+Or run individual steps:
+
+```bash
+docker compose run --rm core materialize-views
+```
+7. **Run Achilles to generate data summaries** (Check What Achilles does below.)
    ```
    docker compose run achilles
    ``` 

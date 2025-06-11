@@ -7,23 +7,23 @@ MYSQL_HOST="sqlmesh-db"
 MYSQL_PORT="3306"
 SOURCE_DB="omop_db"
 TARGET_MYSQL_DB="public"
+CONCEPTS_CSV_FILE="seed/CONCEPT.csv"
+TEMP_DIR="tmp"
 
-
-
-clone-omrs-db() {
+clone-openmrs-db() {
   echo "Cloning OpenMRS database..."
   mysqldump -h "$SRC_HOST" -P "$SRC_PORT" -u "$SRC_USER" -p"$SRC_PASS" "$SRC_DB" \
   | mysql -h sqlmesh-db -uopenmrs -popenmrs openmrs
   echo "Clone completed."
 }
 
-run-sqlmesh() {
+apply-sqlmesh-plan() {
   echo "Running SQLMesh plan..."
   sqlmesh plan --no-prompts --auto-apply
   echo "SQLMesh plan completed."
 }
 
-materialize-views() {
+materialize-mysql-views() {
   echo "Materializing views..."
 
   # === Create target MySQL DB if it doesn't exist ===
@@ -68,7 +68,7 @@ materialize-views() {
   echo "Views materialized."
 }
 
-migrate_to_postgres() {
+migrate-to-postgresql() {
   echo "Migrating to PostgreSQL..."
   # Terminate connections to the target DB
   psql -h "$TARGET_HOST" -p "$TARGET_PORT" -U "$TARGET_USER" -d postgres -c "
@@ -86,7 +86,7 @@ migrate_to_postgres() {
   # # === Step 3: Migrate the entire MySQL DB to PostgreSQL ===
   echo "🚚 Running pgloader to migrate entire database '$TARGET_MYSQL_DB' to PostgreSQL '$TARGET_DB'..."
 
-  cat <<EOF > scripts/tmp/temp_pgloader.load
+  cat <<EOF > $TEMP_DIR/temp_pgloader.load
 LOAD DATABASE
        FROM mysql://root:$SQLMESH_DB_ROOT_PASSWORD@sqlmesh-db:$MYSQL_PORT/$TARGET_MYSQL_DB
        INTO postgresql://$TARGET_USER:$TARGET_PASS@$TARGET_HOST:$TARGET_PORT/$TARGET_DB
@@ -97,9 +97,44 @@ LOAD DATABASE
         CAST type int to integer,
              type datetime to timestamp;
 EOF
-  pgloader scripts/tmp/temp_pgloader.load
+  pgloader $TEMP_DIR/temp_pgloader.load
 
   echo "✅ Migration complete: All materialized views are now in PostgreSQL database '$TARGET_DB'."
+}
+
+import-omop-concepts() {
+  echo "Importing concepts..."
+  psql -U "$TARGET_USER" -h "$TARGET_HOST" -p "$TARGET_PORT" -d "$TARGET_DB" <<EOF
+\copy concept_class FROM 'seed/CONCEPT_CLASS.csv' WITH (FORMAT csv, DELIMITER E'\t', HEADER true);
+EOF
+
+  psql -U "$TARGET_USER" -h "$TARGET_HOST" -p "$TARGET_PORT" -d "$TARGET_DB" <<EOF
+\copy domain FROM 'seed/DOMAIN.csv' WITH (FORMAT csv, DELIMITER E'\t', HEADER true);
+EOF
+
+  psql -U "$TARGET_USER" -h "$TARGET_HOST" -p "$TARGET_PORT" -d "$TARGET_DB" <<EOF
+\copy vocabulary FROM 'seed/VOCABULARY.csv' WITH (FORMAT csv, DELIMITER E'\t', HEADER true);
+EOF
+
+
+  sed 's/"/""/g' $CONCEPTS_CSV_FILE > $TEMP_DIR/escaped_concepts.tmp.csv
+
+  psql -U "$TARGET_USER" -h "$TARGET_HOST" -p "$TARGET_PORT" -d "$TARGET_DB" <<EOF
+\copy concept FROM '$TEMP_DIR/escaped_concepts.tmp.csv' WITH (FORMAT csv, DELIMITER E'\t', HEADER true);
+EOF
+
+  echo "Concepts imported."
+}
+
+apply-omop-constraints() {
+  echo "🔗 Connecting to PostgreSQL and executing constraint scripts..."
+
+  for sql_file in omop-ddl/processed/constraints/*.sql; do
+    echo "⚙️  Executing $sql_file..."
+    psql -U "$TARGET_USER" -h "$TARGET_HOST" -p "$TARGET_PORT" -d "$TARGET_DB" -f "$sql_file"
+  done
+
+  echo "✅ All constraint scripts executed."
 }
 
 command="$1"
@@ -108,22 +143,48 @@ shift
 echo "DEBUG: received command: $command"
 echo "DEBUG: all args: $@"
 
+# Create tmp directory if it doesn't exist
+mkdir -p "$TEMP_DIR"
+
 case "$command" in
-  clone-omrs-db)
-    clone-omrs-db
+  clone-openmrs-db)
+    clone-openmrs-db
     ;;
-  run-sqlmesh)
-    run-sqlmesh
+  apply-sqlmesh-plan)
+    apply-sqlmesh-plan
     ;;
-  materialize-views)
-    materialize-views
+  materialize-mysql-views)
+   materialize-mysql-views
     ;;
-  migrate-to-postgres)
-    migrate_to_postgres
+  migrate-to-postgresql)
+    migrate-to-postgresql
+    ;;
+  import-omop-concepts)
+    import-omop-concepts
+    ;;
+  apply-omop-constraints)
+    apply-omop-constraints
+    ;;
+  run-full-pipeline)
+    echo "Step 1/6"
+    clone-openmrs-db
+    echo "Step 2/6"
+    apply-sqlmesh-plan
+    echo "Step 3/6"
+    materialize-mysql-views
+    echo "Step 4/6"
+    migrate-to-postgresql
+    echo "Step 5/6"
+    import-omop-concepts
+    echo "Step 6/6"
+    apply-omop-constraints
     ;;
   *)
     echo "Unknown command: $command"
-    echo "Usage: $0 {clone-omrs-db|run-sqlmesh}"
+    echo "Usage: $0 {clone-openmrs-db|apply-sqlmesh-plan|materialize-mysql-views|migrate-to-postgresql|import-omop-concepts|apply-omop-constraints|run-full-pipeline}"
     exit 1
     ;;
 esac
+
+# Remove temp directory
+rm -rf "$TEMP_DIR"

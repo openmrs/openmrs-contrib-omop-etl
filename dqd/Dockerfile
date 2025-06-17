@@ -1,8 +1,5 @@
 FROM docker.io/rocker/r-ver:4.2.3
 
-RUN --mount=type=secret,id=GITHUB_PAT \
-    GITHUB_PAT=$(cat /run/secrets/GITHUB_PAT)
-
 RUN <<EOF
 apt-get update
 apt-get install -y --no-install-recommends openjdk-11-jre-headless
@@ -15,7 +12,8 @@ install2.r --error --ncpus 2 \
     remotes \
     ParallelLogger \
     SqlRender \
-    DatabaseConnector
+    DatabaseConnector \
+    shiny
 R CMD javareconf
 EOF
 

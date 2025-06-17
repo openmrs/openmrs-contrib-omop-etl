@@ -58,7 +58,16 @@ docker compose run --rm core materialize-views
    ```
    docker compose run achilles
    ``` 
-
+8. **Run DQD to perform data quality checks**  
+   This runs the [OHDSI Data Quality Dashboard (DQD)](https://github.com/OHDSI/DataQualityDashboard) on the OMOP database.
+    ```bash
+    docker compose run --rm dqd run 
+   ```
+9. **View the Data Quality Dashboard**  
+      This serves the DQD results on a local web server. Once it's running, open your browser and go to [http://localhost:3000](http://localhost:3000).
+   ```
+   docker compose run --rm --service-ports dqd view
+   ``` 
 
 ## 🧪 What does Achilles do?
 Achilles analyzes the OMOP CDM data and generates summary statistics, data quality metrics, and precomputed reports. These results are essential for visualizations in tools like Atlas.

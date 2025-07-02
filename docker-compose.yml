@@ -42,11 +42,13 @@ services:
       - sqlmesh-db
       - omrsdb
       - omop-db
-    # Uncomment the following line during development to mount local files and see changes without rebuilding the image.
-    # Note: This will override files copied into /core during build.
-    # - so be sure your local files are complete.
+
     volumes:
-       - ./core:/core
+       - ./concepts:/concepts
+      # Uncomment the following line during development to mount local files and see changes without rebuilding the image.
+      # Note: This will override files copied into /core during build.
+      # - so be sure your local files are complete.
+      # - ./core:/core
     profiles:
       - manual
 

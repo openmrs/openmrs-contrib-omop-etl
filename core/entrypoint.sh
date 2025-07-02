@@ -17,6 +17,10 @@ clone-openmrs-db() {
   echo "Clone completed."
 }
 
+generate-concepts-usagi-input() {
+  python3 export_concepts.py
+}
+
 apply-sqlmesh-plan() {
   echo "Running SQLMesh plan..."
   sqlmesh plan --no-prompts --auto-apply
@@ -150,6 +154,9 @@ case "$command" in
   clone-openmrs-db)
     clone-openmrs-db
     ;;
+  generate-concepts-usagi-input)
+    generate-concepts-usagi-input
+    ;;
   apply-sqlmesh-plan)
     apply-sqlmesh-plan
     ;;
@@ -181,7 +188,7 @@ case "$command" in
     ;;
   *)
     echo "Unknown command: $command"
-    echo "Usage: $0 {clone-openmrs-db|apply-sqlmesh-plan|materialize-mysql-views|migrate-to-postgresql|import-omop-concepts|apply-omop-constraints|run-full-pipeline}"
+    echo "Usage: $0 {clone-openmrs-db|generate-concepts-usagi-input|apply-sqlmesh-plan|materialize-mysql-views|migrate-to-postgresql|import-omop-concepts|apply-omop-constraints|run-full-pipeline}"
     exit 1
     ;;
 esac

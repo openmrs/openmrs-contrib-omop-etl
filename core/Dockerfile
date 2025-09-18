@@ -28,6 +28,7 @@ COPY omop-ddl omop-ddl
 COPY models models
 COPY config.yaml .
 COPY entrypoint.sh .
+COPY export_concepts.py .
 
 
 RUN chmod +x /core/entrypoint.sh

@@ -31,7 +31,12 @@ docker compose up
 
 ---
 
-### 4. Generate the Usagi Input File
+### 4. Clone the production database
+```bash
+docker compose run --rm core clone-openmrs-db
+```
+
+### 5. Generate the Usagi Input File
 
 Run the following command:
 
@@ -51,7 +56,7 @@ You’ll import this file into **Usagi** to map your OpenMRS concepts to OMOP st
 
 ---
 
-### 5. Import the File into Usagi
+### 6. Import the File into Usagi
 
 #### a. Download and Install Usagi
 
@@ -145,7 +150,7 @@ File > Apply Previous Mapping
 
 
 
-### 6. **Run the core service to convert the data**  
+### 7. **Run the core service to convert the data**  
     
     Typical usage:
 
@@ -179,16 +184,16 @@ Or run individual steps:
 ```bash
 docker compose run --rm core materialize-views
 ```
-### 7. **Run Achilles to generate data summaries** (Check What Achilles does below.)
+### 8. **Run Achilles to generate data summaries** (Check What Achilles does below.)
    ```
    docker compose run achilles
    ``` 
-### 8. **Run DQD to perform data quality checks**  
+### 9. **Run DQD to perform data quality checks**  
    This runs the [OHDSI Data Quality Dashboard (DQD)](https://github.com/OHDSI/DataQualityDashboard) on the OMOP database.
    ```bash
     docker compose run --rm dqd run 
    ```
-### 9. **View the Data Quality Dashboard**  
+### 10. **View the Data Quality Dashboard**  
       This serves the DQD results on a local web server. Once it's running, open your browser and go to [http://localhost:3000](http://localhost:3000).
    ```
    docker compose run --rm --service-ports dqd view

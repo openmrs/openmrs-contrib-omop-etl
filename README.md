@@ -150,13 +150,45 @@ File > Apply Previous Mapping
 
 
 
-### 7. **Run the core service to convert the data**  
-    
-    Typical usage:
+### 7. **Run the core service to convert the data**
+
+You have two options to run the data conversion:
+
+#### Option 1: Run the Full Pipeline
+
+Execute all steps automatically in the correct order:
 
 ```bash
-docker compose run --rm core <command>
+docker compose run --rm core run-full-pipeline
 ```
+
+#### Option 2: Run Commands Step-by-Step
+
+If you prefer to run commands individually, follow the order specified here:
+
+```bash
+# Step 1: Apply SQLMesh plan
+docker compose run --rm core apply-sqlmesh-plan
+
+# Step 2: Materialize MySQL views
+docker compose run --rm core materialize-mysql-views
+
+# Step 3: Migrate to PostgreSQL
+docker compose run --rm core migrate-to-postgresql
+
+# Step 4: Import OMOP concepts
+docker compose run --rm core import-omop-concepts
+
+# Step 5: Apply OMOP constraints
+docker compose run --rm core apply-omop-constraints
+
+# Step 6: Populate CDM source
+docker compose run --rm core populate-cdm-source
+```
+
+**Note:** The order of commands is important. Refer to `core/entrypoint.sh` for the exact sequence used in the full pipeline.
+
+---
 
 **Available Commands**
 
@@ -169,21 +201,9 @@ docker compose run --rm core <command>
 | `migrate-to-postgresql`         | Migrates the materialized MySQL database to PostgreSQL using `pgloader`, recreating the target PostgreSQL DB and loading OMOP DDL. |
 | `import-omop-concepts`          | Imports OMOP vocabulary/concept CSVs (`CONCEPT_CLASS`, `DOMAIN`, `VOCABULARY`, and `CONCEPT`) into the PostgreSQL database.        |
 | `apply-omop-constraints`        | Executes SQL constraint scripts from `omop-ddl/processed/constraints/` against the PostgreSQL database.                            |
-| `run-full-pipeline`             | Executes all steps: clone DB, apply SQLMesh, materialize views, migrate to PostgreSQL, import concepts, and apply constraints.     |
+| `populate-cdm-source`           | Populates the CDM source metadata table with configuration details.                                                                |
+| `run-full-pipeline`             | Executes all steps automatically in the correct order (see `core/entrypoint.sh` for details).                                      |
 
-**Example**
-
-To run the full pipeline:
-
-```bash
-docker compose run --rm core run-all
-```
-
-Or run individual steps:
-
-```bash
-docker compose run --rm core materialize-views
-```
 ### 8. **Run Achilles to generate data summaries** (Check What Achilles does below.)
    ```
    docker compose run achilles

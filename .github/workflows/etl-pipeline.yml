@@ -1,0 +1,79 @@
+name: OMOP ETL Pipeline
+
+on:
+  workflow_dispatch:  # Allows manual triggering
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  etl-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true  # Enable Git LFS for large files
+
+      - name: Checkout LFS objects
+        run: git lfs pull
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Build the Required Images
+      - name: Build required images
+        run: docker compose --profile manual build
+
+      # Start the services
+      - name: Start services
+        run: docker compose up -d
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for services to be healthy..."
+          sleep 30
+          docker compose ps
+
+      # Clone the production database
+      - name: Clone production database
+        run: docker compose run --rm core clone-openmrs-db
+
+      # Generate the Usagi Input File
+      - name: Generate Usagi input file
+        run: docker compose run --rm core generate-concepts-usagi-input
+
+      # Run Commands Step-by-Step
+
+      - name: Apply SQLMesh plan
+        run: docker compose run --rm core apply-sqlmesh-plan
+
+      - name: Materialize MySQL views
+        run: docker compose run --rm core materialize-mysql-views
+
+      - name: Migrate to PostgreSQL
+        run: docker compose run --rm core migrate-to-postgresql
+
+      - name: Import OMOP concepts
+        run: docker compose run --rm core import-omop-concepts
+
+      - name: Apply OMOP constraints
+        run: docker compose run --rm core apply-omop-constraints
+
+      - name: Populate CDM source
+        run: docker compose run --rm core populate-cdm-source
+
+      # Cleanup
+      - name: Show logs on failure
+        if: failure()
+        run: |
+          echo "=== Docker Compose Logs ==="
+          docker compose logs
+
+      - name: Stop services
+        if: always()
+        run: docker compose down -v

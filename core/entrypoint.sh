@@ -141,6 +141,65 @@ apply-omop-constraints() {
   echo "✅ All constraint scripts executed."
 }
 
+populate-cdm-source() {
+  local sql_file="${TEMP_DIR}/cdm_source.sql"
+
+  : "${CDM_SOURCE_NAME:=OpenMRS OMOP CDM}"
+  : "${CDM_SOURCE_ABBR:=OMRS}"
+  : "${CDM_HOLDER:=OpenMRS Community}"
+  : "${CDM_SOURCE_DESC:=OMOP CDM instance generated from OpenMRS data.}"
+  : "${CDM_DOC_REF:=https://openmrs.org}"
+  : "${CDM_ETL_REF:=https://github.com/openmrs/etl-pipeline}"
+  : "${CDM_VERSION:=5.4.0}"
+  : "${VOCAB_VERSION:=v5.0}"
+
+  mkdir -p "$(dirname "$sql_file")"
+
+  cat > "$sql_file" <<'SQL'
+\set ON_ERROR_STOP on
+BEGIN;
+TRUNCATE TABLE public.cdm_source;
+INSERT INTO public.cdm_source (
+  cdm_source_name,
+  cdm_source_abbreviation,
+  cdm_holder,
+  source_description,
+  source_documentation_reference,
+  cdm_etl_reference,
+  source_release_date,
+  cdm_release_date,
+  cdm_version,
+  cdm_version_concept_id,
+  vocabulary_version
+) VALUES (
+  :'cdm_source_name',
+  :'cdm_source_abbr',
+  :'cdm_holder',
+  :'cdm_source_desc',
+  :'cdm_doc_ref',
+  :'cdm_etl_ref',
+  CURRENT_DATE,
+  CURRENT_DATE,
+  :'cdm_version',
+  1,
+  :'vocab_version'
+);
+COMMIT;
+SQL
+
+  psql -U "$TARGET_USER" -h "$TARGET_HOST" -p "$TARGET_PORT" -d "$TARGET_DB" \
+    -v cdm_source_name="$CDM_SOURCE_NAME" \
+    -v cdm_source_abbr="$CDM_SOURCE_ABBR" \
+    -v cdm_holder="$CDM_HOLDER" \
+    -v cdm_source_desc="$CDM_SOURCE_DESC" \
+    -v cdm_doc_ref="$CDM_DOC_REF" \
+    -v cdm_etl_ref="$CDM_ETL_REF" \
+    -v cdm_version="$CDM_VERSION" \
+    -v vocab_version="$VOCAB_VERSION" \
+    -f "$sql_file"
+}
+
+
 command="$1"
 shift
 
@@ -169,22 +228,22 @@ case "$command" in
   import-omop-concepts)
     import-omop-concepts
     ;;
-  apply-omop-constraints)
-    apply-omop-constraints
+  populate-cdm-source)
+    populate-cdm-source
     ;;
   run-full-pipeline)
     echo "Step 1/6"
-    clone-openmrs-db
-    echo "Step 2/6"
     apply-sqlmesh-plan
-    echo "Step 3/6"
+    echo "Step 2/6"
     materialize-mysql-views
-    echo "Step 4/6"
+    echo "Step 3/6"
     migrate-to-postgresql
-    echo "Step 5/6"
+    echo "Step 4/6"
     import-omop-concepts
-    echo "Step 6/6"
+    echo "Step 5/6"
     apply-omop-constraints
+    echo "Step 6/6"
+    populate-cdm-source
     ;;
   *)
     echo "Unknown command: $command"

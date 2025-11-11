@@ -36,7 +36,15 @@ docker compose up
 docker compose run --rm core clone-openmrs-db
 ```
 
-### 5. Generate the Usagi Input File
+### 5. Map OpenMRS Concepts to OMOP Standard Concepts
+
+This step involves mapping your OpenMRS concepts to OMOP standard concepts using the Usagi tool. This mapping is crucial for ensuring that your OpenMRS data is correctly transformed into the OMOP Common Data Model.
+
+> **Note:** For your convenience, example mappings are provided in the `concepts` directory. If you're here to explore the project, you can skip this step and use the provided example mappings. This step is only required when working with a production environment or when connecting a different OpenMRS database.
+
+---
+
+#### 5.1. Generate the Usagi Input File
 
 Run the following command:
 
@@ -52,24 +60,24 @@ This will generate a CSV file containing OpenMRS concept IDs, names, and their u
 /concepts/concepts_for_usagi_mapping
 ```
 
-You’ll import this file into **Usagi** to map your OpenMRS concepts to OMOP standard concepts.
+You'll import this file into **Usagi** to map your OpenMRS concepts to OMOP standard concepts.
 
 ---
 
-### 6. Import the File into Usagi
+#### 5.2. Import the File into Usagi
 
-#### a. Download and Install Usagi
+##### a. Download and Install Usagi
 
-If you don’t have Usagi installed yet:
+If you don't have Usagi installed yet:
 
-- Go to the official OHDSI page for Usagi:  
+- Go to the official OHDSI page for Usagi:
   [https://ohdsi.github.io/Usagi/](https://ohdsi.github.io/Usagi/)
 - Download the latest release suitable for your operating system.
 - Extract and run Usagi.
 
 ---
 
-#### b. Import the OMOP Vocabulary
+##### b. Import the OMOP Vocabulary
 
 Before you can map your concepts, you must load the OMOP vocabulary into Usagi.
 
@@ -86,7 +94,7 @@ File > Import Vocabulary
 
 ---
 
-#### c. Import the Concepts for Mapping
+##### c. Import the Concepts for Mapping
 
 - In Usagi, go to:
 
@@ -94,7 +102,7 @@ File > Import Vocabulary
 File > Import Codes
 ```
 
-- Select the file you generated in Step 4:
+- Select the file you generated in Step 5.1:
 
 ```
 /concepts/concepts_for_usagi_mapping
@@ -104,14 +112,14 @@ Usagi will automatically attempt to map your source concepts to standard OMOP co
 
 ---
 
-#### d. Review and Save the Mapping
+##### d. Review and Save the Mapping
 
 - Review the suggested mappings:
     - Approve mappings
     - Change mappings
     - Or leave some unmapped for later
 
-- Once you’re done, save the mapping:
+- Once you're done, save the mapping:
 
 ![](docs/img/usagi.jpeg)
 ```
@@ -134,7 +142,7 @@ This file will later be used by **SQLMesh** during ETL processing.
 
 ---
 
-#### e. Updating Your Mapping Later
+##### e. Updating Your Mapping Later
 
 If you wish to change mappings in the future:
 
@@ -150,7 +158,7 @@ File > Apply Previous Mapping
 
 
 
-### 7. **Run the core service to convert the data**
+### 6. **Run the core service to convert the data**
 
 You have two options to run the data conversion:
 
@@ -204,16 +212,16 @@ docker compose run --rm core populate-cdm-source
 | `populate-cdm-source`           | Populates the CDM source metadata table with configuration details.                                                                |
 | `run-full-pipeline`             | Executes all steps automatically in the correct order (see `core/entrypoint.sh` for details).                                      |
 
-### 8. **Run Achilles to generate data summaries** (Check What Achilles does below.)
+### 7. **Run Achilles to generate data summaries** (Check What Achilles does below.)
    ```
    docker compose run achilles
-   ``` 
-### 9. **Run DQD to perform data quality checks**  
+   ```
+### 8. **Run DQD to perform data quality checks**
    This runs the [OHDSI Data Quality Dashboard (DQD)](https://github.com/OHDSI/DataQualityDashboard) on the OMOP database.
    ```bash
-    docker compose run --rm dqd run 
+    docker compose run --rm dqd run
    ```
-### 10. **View the Data Quality Dashboard**  
+### 9. **View the Data Quality Dashboard**
       This serves the DQD results on a local web server. Once it's running, open your browser and go to [http://localhost:3000](http://localhost:3000).
    ```
    docker compose run --rm --service-ports dqd view

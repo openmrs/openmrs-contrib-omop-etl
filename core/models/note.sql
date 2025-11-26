@@ -39,8 +39,10 @@ SELECT o.obs_id             AS note_id,
        NULL                 AS note_event_field_concept_id
 FROM openmrs.obs o
          INNER JOIN openmrs.encounter e ON o.encounter_id = e.encounter_id
-         INNER JOIN openmrs.encounter_type et ON e.encounter_type = et.encounter_type_id
          INNER JOIN openmrs.users creator ON o.creator = creator.user_id
+         LEFT JOIN raw.CONCEPT_MAPPING concept_mapping
+                   ON o.concept_id = concept_mapping.sourceCode
 WHERE o.voided = 0
-  AND et.encounter_type_id = 8 -- 8 = visit note
-  AND o.value_text IS NOT NULL;
+  AND o.value_text IS NOT NULL
+  AND concept_mapping.conceptId = 42870538
+  OR concept_mapping.domainId = 'Note';

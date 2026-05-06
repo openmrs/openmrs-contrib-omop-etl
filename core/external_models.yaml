@@ -148,6 +148,45 @@
     retire_reason: VARCHAR(255)
     uuid: CHAR(38)
   gateway: omrs
+- name: '`openmrs`.`cohort`'
+  columns:
+    cohort_id: INT(11)
+    name: VARCHAR(255)
+    description: VARCHAR(1000)
+    creator: INT(11)
+    date_created: DATETIME
+    voided: TINYINT(1)
+    voided_by: INT(11)
+    date_voided: DATETIME
+    void_reason: VARCHAR(255)
+    changed_by: INT(11)
+    date_changed: DATETIME
+    uuid: CHAR(38)
+    location_id: INT(11)
+    startDate: DATETIME
+    endDate: DATETIME
+    is_group_cohort: TINYINT(1)
+    cohort_type_id: INT(11)
+    definition_handler: VARCHAR(255)
+    definition_handler_config: LONGTEXT
+  gateway: omrs
+- name: '`openmrs`.`cohort_member`'
+  columns:
+    cohort_member_id: INT(11)
+    cohort_id: INT(11)
+    patient_id: INT(11)
+    start_date: DATETIME
+    end_date: DATETIME
+    creator: INT(11)
+    date_created: DATETIME
+    voided: TINYINT(1)
+    voided_by: INT(11)
+    date_voided: DATETIME
+    void_reason: VARCHAR(255)
+    uuid: CHAR(38)
+    date_changed: DATE
+    changed_by: INT(11)
+  gateway: omrs
 - name: '`openmrs`.`conditions`'
   columns:
     condition_id: INT(11)

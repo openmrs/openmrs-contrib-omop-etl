@@ -1,0 +1,72 @@
+name: OMOP ETL Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  etl-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Checkout LFS objects
+        run: git lfs pull
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build required images
+        run: docker compose --profile manual build
+
+      - name: Start services
+        run: docker compose up -d
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for omrsdb (OpenMRS MySQL) to accept connections..."
+          timeout 180 bash -c "until docker compose exec -T omrsdb mysqladmin ping -h 127.0.0.1 -u openmrs -popenmrs --silent 2>/dev/null; do sleep 5; done"
+          echo "Waiting for sqlmesh-db (MariaDB) to accept connections..."
+          timeout 120 bash -c "until docker compose exec -T sqlmesh-db mysqladmin ping -h 127.0.0.1 -u openmrs -popenmrs --silent 2>/dev/null; do sleep 5; done"
+          echo "Waiting for omop-db (PostgreSQL) to accept connections..."
+          timeout 120 bash -c "until docker compose exec -T omop-db pg_isready -U omop 2>/dev/null; do sleep 5; done"
+          docker compose ps
+
+      - name: Clone OpenMRS database
+        run: docker compose run --rm core clone-openmrs-db
+
+      - name: Apply SQLMesh plan
+        run: docker compose run --rm core apply-sqlmesh-plan
+
+      - name: Materialize MySQL views
+        run: docker compose run --rm core materialize-mysql-views
+
+      - name: Migrate to PostgreSQL
+        run: docker compose run --rm core migrate-to-postgresql
+
+      - name: Import OMOP concepts
+        run: docker compose run --rm core import-omop-concepts
+
+      - name: Apply OMOP constraints
+        run: docker compose run --rm core apply-omop-constraints
+
+      - name: Populate CDM source
+        run: docker compose run --rm core populate-cdm-source
+
+      - name: Show logs on failure
+        if: failure()
+        run: |
+          echo "=== Docker Compose Logs ==="
+          docker compose logs
+
+      - name: Stop services
+        if: always()
+        run: docker compose down -v

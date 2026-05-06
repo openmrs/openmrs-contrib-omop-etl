@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 export PGPASSWORD=$TARGET_PASS
 MYSQL_USER="root"
@@ -23,8 +24,7 @@ generate-concepts-usagi-input() {
 
 apply-sqlmesh-plan() {
   echo "Running SQLMesh plan..."
-  sqlmesh plan --no-prompts --auto-apply --restate-model '*'
-#  sqlmesh plan --no-prompts --auto-apply
+  sqlmesh plan --no-prompts --auto-apply
   echo "SQLMesh plan completed."
 }
 
@@ -228,6 +228,9 @@ case "$command" in
     ;;
   import-omop-concepts)
     import-omop-concepts
+    ;;
+  apply-omop-constraints)
+    apply-omop-constraints
     ;;
   populate-cdm-source)
     populate-cdm-source

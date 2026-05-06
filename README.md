@@ -1,5 +1,65 @@
 
 
+## 📊 OMOP CDM Coverage
+
+The table below shows which OMOP Common Data Model (CDM) entities are covered by this ETL pipeline.
+
+### Status Legend
+
+| Status | Meaning |
+|--------|---------|
+| **DONE** | Fully implemented and available in the ETL pipeline |
+| **PRE** | Pre-loaded automatically — either downloaded from OHDSI Athena or populated by the ETL setup steps (vocabulary and CDM metadata tables) |
+| **PENDING** | Not yet implemented; planned for a future release |
+| **OPTIONAL** | Optional table; not required for core ETL functionality |
+| **N/a** | Not applicable — either no corresponding OpenMRS entity exists or the mapping is out of scope |
+
+### Entity Status
+
+| Entity | Status | Notes |
+|--------|--------|-------|
+| [PERSON](core/models/person.sql) | DONE | |
+| [OBSERVATION\_PERIOD](core/models/observation_period.sql) | DONE | |
+| [VISIT\_OCCURRENCE](core/models/visit_occurrence.sql) | DONE | |
+| VISIT\_DETAIL | N/a | Intended for hierarchical care-unit/ADT-style sub-visits, which OpenMRS encounters do not consistently represent, so a reliable semantic mapping is not currently possible |
+| [CONDITION\_OCCURRENCE](core/models/condition_occurrence.sql) | DONE | |
+| [DRUG\_EXPOSURE](core/models/drug_exposure.sql) | DONE | |
+| PROCEDURE\_OCCURRENCE | PENDING | Not yet released; pending upstream feature availability |
+| DEVICE\_EXPOSURE | N/a | |
+| [MEASUREMENT](core/models/measurement.sql) | DONE | |
+| [OBSERVATION](core/models/observation.sql) | DONE | |
+| [DEATH](core/models/death.sql) | DONE | |
+| [NOTE](core/models/note.sql) | DONE | |
+| NOTE\_NLP | N/a | |
+| SPECIMEN | N/a | No specimen entity table in OpenMRS |
+| FACT\_RELATIONSHIP | N/a | Partially mappable — only obs-grouping and diag-condition links available |
+| [LOCATION](core/models/location.sql) | DONE | |
+| [CARE\_SITE](core/models/care_site.sql) | DONE | |
+| [PROVIDER](core/models/provider.sql) | DONE | |
+| PAYER\_PLAN\_PERIOD | N/a | |
+| COST | N/a | |
+| DRUG\_ERA | PENDING | Derivable from DRUG\_EXPOSURE; not stored at the OpenMRS level |
+| DOSE\_ERA | PENDING | Dose unit normalisation non-trivial; recommend defer |
+| CONDITION\_ERA | PENDING | Derivable from CONDITION\_OCCURRENCE; not stored at the OpenMRS level |
+| EPISODE | N/a | |
+| EPISODE\_EVENT | N/a | |
+| METADATA | OPTIONAL | |
+| CDM\_SOURCE | PRE | |
+| CONCEPT | PRE | |
+| VOCABULARY | PRE | |
+| DOMAIN | PRE | |
+| CONCEPT\_CLASS | PRE | |
+| CONCEPT\_RELATIONSHIP | PRE | |
+| RELATIONSHIP | PRE | |
+| CONCEPT\_SYNONYM | PRE | |
+| CONCEPT\_ANCESTOR | PRE | |
+| SOURCE\_TO\_CONCEPT\_MAP | PRE | |
+| DRUG\_STRENGTH | PRE | |
+| [COHORT](core/models/cohort.sql) | DONE | |
+| [COHORT\_DEFINITION](core/models/cohort_definition.sql) | DONE | |
+
+---
+
 ## 🏗️ Setting Up the Project
 
 Follow these steps to get the project up and running:

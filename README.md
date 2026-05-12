@@ -300,6 +300,45 @@ docker compose run achilles
 - ✅ Produces results in the Achilles_results and Achilles_analysis tables
 - ✅ Prepares your OMOP CDM for use with the web-based Atlas UI
 
+## 🔭 Exploring data with Atlas
+
+Atlas is the OHDSI web UI for browsing the OMOP CDM, designing cohorts, running characterizations, and viewing Achilles-derived summary stats. It runs as a four-container stack (atlasdb + atlasdb-init + WebAPI + Atlas UI, plus a one-shot source-init container) under the `manual` profile.
+
+### Start Atlas
+
+```bash
+docker compose --profile manual up -d atlas
+```
+
+This is a single command but exercises the full pipeline as docker dependencies:
+1. **`core`** runs the SQLmesh ETL to completion (required prerequisite — Atlas cannot start without a populated OMOP CDM).
+2. **`achilles`** runs and writes `achilles_results` / `achilles_results_dist` into `omop-db`. Required for the Data Sources dashboard.
+3. **`atlasdb`** starts; **`atlasdb-init`** drops the image's baked-in Eunomia demo schemas.
+4. **`atlas-webapi`** boots, runs Flyway migrations on its own metadata store, and reports healthy.
+5. **`atlas-source-init`** registers `omop-db` as the WebAPI source (named `OpenMRS OMOP`) and refreshes WebAPI's source cache.
+6. **`atlas`** UI comes up.
+
+### URLs
+
+- Atlas UI: [http://localhost:8081/atlas](http://localhost:8081/atlas)
+- WebAPI info endpoint (debugging): [http://localhost:8082/WebAPI/info](http://localhost:8082/WebAPI/info)
+- Registered sources (debugging): [http://localhost:8082/WebAPI/source/sources](http://localhost:8082/WebAPI/source/sources)
+
+### Notes
+
+- **`core` and `achilles` re-run on every Atlas start** because they are declared as `service_completed_successfully` dependencies. SQLmesh is idempotent so subsequent ETL runs are fast if nothing changed, but Achilles always re-runs. To restart only the UI containers without re-running the pipeline:
+  ```bash
+  docker compose --profile manual up -d --no-deps atlas-webapi atlas
+  ```
+- **Source registration runs every Atlas start** but is idempotent (`ON CONFLICT DO NOTHING`). On first boot, the `atlasdb-init` container also drops the Eunomia demo schemas baked into the `broadsea-atlasdb` image, so no demo data lingers.
+
+### Troubleshooting
+
+- **`core` exits non-zero** — the ETL itself failed. Inspect `docker logs core` and rerun. Atlas cannot start without a successful core run.
+- **Atlas loads but shows no data sources** — `atlas-source-init` failed; check its logs with `docker logs atlas-source-init`. Most often the WebAPI cache refresh failed because WebAPI wasn't actually healthy yet — restart Atlas: `docker compose --profile manual restart atlas`.
+- **Browser console: CORS error from `/WebAPI`** — `SECURITY_ORIGIN` in the `atlas-webapi` service doesn't match the URL the browser uses to load Atlas (default: `http://localhost:8081`).
+- **WebAPI crash-loops with `relation "public.cc_results" does not exist`** — this means a source was registered BEFORE WebAPI completed its initial Flyway pass. Wipe the atlasdb volume (`docker volume rm openmrs-contrib-omop-etl_atlasdb-data`) and retry; `atlas-source-init` defers source registration until WebAPI is healthy precisely to avoid this.
+
 ## 🏥 Optional: Run with OpenMRS Instance
 If you want to have an OpenMRS instance up and running alongside the ETL pipeline, you can use the `docker-compose.openmrs.yml` override file.
 

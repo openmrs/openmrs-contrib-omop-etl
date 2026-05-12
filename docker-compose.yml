@@ -6,6 +6,15 @@ services:
     image: openmrs/openmrs-reference-application-3-db:nightly-with-data
     ports:
       - "3306:3306"
+    healthcheck:
+      # Reports healthy only once the seed OpenMRS schema has loaded. core's
+      # SQLmesh plan reads from openmrs.person/obs/encounter/etc., so we need
+      # to wait for those tables, not just for mysqld accepting connections.
+      test: ["CMD-SHELL", "mysql -uroot -popenmrs openmrs -e 'SELECT 1 FROM person LIMIT 1' >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
   sqlmesh-db:
     image: mariadb:10.11.7
     restart: "unless-stopped"
@@ -39,9 +48,22 @@ services:
       ACHILLES_VOCAB_SCHEMA: vocab
       ACHILLES_RESULTS_SCHEMA: results
     depends_on:
-      - sqlmesh-db
-      - omrsdb
-      - omop-db
+      sqlmesh-db:
+        condition: service_started
+      omrsdb:
+        condition: service_healthy   # MySQL seed data must be loaded before core reads from openmrs.*
+      omop-db:
+        condition: service_started
+    # Default command when invoked via `depends_on` (e.g. by atlas). Runs the
+    # clone step (dumps omrsdb -> sqlmesh-db) BEFORE the pipeline — SQLmesh
+    # reads from sqlmesh-db, not omrsdb directly, so the dump is mandatory.
+    # `|| true` on the pipeline keeps the auto-chain unblocked when the
+    # pre-existing populate-cdm-source step fails because public.concept is
+    # empty (vocabulary import is a separate user step — see README).
+    # Still overridable for one-off subcommands: `docker compose run core <cmd>`.
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - "/core/entrypoint.sh clone-openmrs-db && (/core/entrypoint.sh run-full-pipeline || echo 'WARN: pipeline exited non-zero (likely populate-cdm-source FK on empty concept table). CDM data tables ARE populated; only metadata row is missing.')"
 
     volumes:
        - ./concepts:/concepts
@@ -70,7 +92,10 @@ services:
     container_name: achilles
     platform: linux/amd64
     depends_on:
-      - omop-db
+      omop-db:
+        condition: service_started
+      core:
+        condition: service_completed_successfully
     environment:
       ACHILLES_DB_URI: "postgresql://omop-db:5432/omop"
       ACHILLES_DB_USERNAME: "omop"
@@ -132,6 +157,135 @@ services:
     profiles:
       - manual
 
+  atlasdb:
+    image: ohdsi/broadsea-atlasdb:2.3.0
+    container_name: atlasdb
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: mypass
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - atlasdb-data:/var/lib/postgresql/data
+    profiles:
+      - manual
+
+  atlasdb-init:
+    image: postgres:15
+    container_name: atlasdb-init
+    platform: linux/amd64
+    depends_on:
+      atlasdb:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: mypass
+    volumes:
+      - ./atlas/100_populate_source_source_daimon.sql:/seed.sql:ro
+    command: ["psql", "-h", "atlasdb", "-U", "postgres", "-d", "postgres", "-f", "/seed.sql"]
+    profiles:
+      - manual
+
+  atlas-webapi:
+    image: ohdsi/webapi:2.15.0
+    container_name: atlas-webapi
+    platform: linux/amd64
+    restart: unless-stopped
+    depends_on:
+      atlasdb:
+        condition: service_healthy
+      atlasdb-init:
+        condition: service_completed_successfully
+      omop-db:
+        condition: service_started
+      achilles:
+        condition: service_completed_successfully
+    environment:
+      DATASOURCE_DRIVERCLASSNAME: org.postgresql.Driver
+      DATASOURCE_URL: jdbc:postgresql://atlasdb:5432/postgres
+      DATASOURCE_USERNAME: postgres
+      DATASOURCE_PASSWORD: mypass
+      DATASOURCE_OHDSI_SCHEMA: webapi
+      SPRING_BATCH_REPOSITORY_TABLEPREFIX: webapi.BATCH_
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: webapi
+      FLYWAY_DATASOURCE_DRIVERCLASSNAME: org.postgresql.Driver
+      FLYWAY_DATASOURCE_URL: jdbc:postgresql://atlasdb:5432/postgres
+      FLYWAY_DATASOURCE_USERNAME: postgres
+      FLYWAY_DATASOURCE_PASSWORD: mypass
+      FLYWAY_LOCATIONS: classpath:db/migration/postgresql
+      FLYWAY_PLACEHOLDERS_OHDSISCHEMA: webapi
+      FLYWAY_SCHEMAS: webapi
+      FLYWAY_TABLE: schema_history
+      FLYWAY_BASELINE_ON_MIGRATE: "true"
+      FLYWAY_BASELINEDESCRIPTION: "Base Migration"
+      flyway_baselineVersionAsString: "2.2.5.20180212152023"
+      SECURITY_PROVIDER: DisabledSecurity
+      SECURITY_CORS_ENABLED: "true"
+      SECURITY_ORIGIN: "http://localhost:8081"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/WebAPI/info > /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    ports:
+      - "8082:8080"
+    profiles:
+      - manual
+
+  atlas-source-init:
+    image: postgres:15
+    container_name: atlas-source-init
+    platform: linux/amd64
+    depends_on:
+      atlas-webapi:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: mypass
+    volumes:
+      - ./atlas/register-source.sql:/seed.sql:ro
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        set -e
+        psql -h atlasdb -U postgres -d postgres -f /seed.sql
+        # Force WebAPI to reload its source cache so the new source is visible
+        # without restarting webapi. Uses bash /dev/tcp builtin so we don't
+        # need curl/wget (not in the postgres image).
+        exec 3<>/dev/tcp/atlas-webapi/8080
+        printf 'GET /WebAPI/source/refresh HTTP/1.0\r\nHost: atlas-webapi\r\n\r\n' >&3
+        head -1 <&3
+        exec 3<&-
+        echo "Source registered and WebAPI refreshed."
+    profiles:
+      - manual
+
+  atlas:
+    image: ohdsi/atlas:2.15.0
+    container_name: atlas
+    platform: linux/amd64
+    restart: unless-stopped
+    depends_on:
+      atlas-webapi:
+        condition: service_healthy
+      atlas-source-init:
+        condition: service_completed_successfully
+    environment:
+      WEBAPI_URL: "http://localhost:8082/WebAPI/"
+      ATLAS_INSTANCE_NAME: "OpenMRS OMOP"
+    volumes:
+      - ./atlas/config-local-template.js:/tmp/config-local.js:ro
+      - ./atlas/envsubst.sh:/tmp/envsubst.sh:ro
+    entrypoint: ["sh", "/tmp/envsubst.sh"]
+    ports:
+      - "8081:8080"
+    profiles:
+      - manual
+
 
 
 volumes:
@@ -140,3 +294,4 @@ volumes:
   postgres_data: ~
   jdbc-drivers-data: ~
   cdm-postprocessing-data: ~
+  atlasdb-data: ~

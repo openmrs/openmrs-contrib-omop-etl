@@ -66,11 +66,11 @@ services:
       - "/core/entrypoint.sh clone-openmrs-db && (/core/entrypoint.sh run-full-pipeline || echo 'WARN: pipeline exited non-zero (likely populate-cdm-source FK on empty concept table). CDM data tables ARE populated; only metadata row is missing.')"
 
     volumes:
-       - ./concepts:/concepts
+      - ./concepts:/concepts
       # Uncomment the following line during development to mount local files and see changes without rebuilding the image.
       # Note: This will override files copied into /core during build.
       # - so be sure your local files are complete.
-       - ./core:/core
+      - ./core:/core
     profiles:
       - manual
 
@@ -84,8 +84,8 @@ services:
       POSTGRES_PASSWORD: omop
     ports:
       - "5432:5432"
-#    volumes:
-#      - ./omop-ddl/processed/ddl:/docker-entrypoint-initdb.d
+  #    volumes:
+  #      - ./omop-ddl/processed/ddl:/docker-entrypoint-initdb.d
   achilles:
     build: achilles
     image: omop-etl-achilles
@@ -116,8 +116,8 @@ services:
     platform: "linux/amd64"
     ports:
       - "3000:3000"
-#    secrets:
-#      - CDM_CONNECTIONDETAILS_PASSWORD
+    #    secrets:
+    #      - CDM_CONNECTIONDETAILS_PASSWORD
     environment:
       CDM_CONNECTIONDETAILS_DBMS: "postgresql"
       CDM_CONNECTIONDETAILS_USER: "omop"

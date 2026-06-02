@@ -54,16 +54,6 @@ services:
         condition: service_healthy   # MySQL seed data must be loaded before core reads from openmrs.*
       omop-db:
         condition: service_started
-    # Default command when invoked via `depends_on` (e.g. by atlas). Runs the
-    # clone step (dumps omrsdb -> sqlmesh-db) BEFORE the pipeline — SQLmesh
-    # reads from sqlmesh-db, not omrsdb directly, so the dump is mandatory.
-    # `|| true` on the pipeline keeps the auto-chain unblocked when the
-    # pre-existing populate-cdm-source step fails because public.concept is
-    # empty (vocabulary import is a separate user step — see README).
-    # Still overridable for one-off subcommands: `docker compose run core <cmd>`.
-    entrypoint: ["/bin/bash", "-c"]
-    command:
-      - "/core/entrypoint.sh clone-openmrs-db && (/core/entrypoint.sh run-full-pipeline || echo 'WARN: pipeline exited non-zero (likely populate-cdm-source FK on empty concept table). CDM data tables ARE populated; only metadata row is missing.')"
 
     volumes:
       - ./concepts:/concepts
